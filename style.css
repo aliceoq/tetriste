@@ -1,0 +1,16 @@
+body {
+    text-align: center;
+    background-color: gainsboro;
+}
+
+.screen{
+    float: left;
+    border: 4px solid lightblue;
+}
+
+.info {
+    float: left;
+    height: 600px;
+    width: 200px;
+    border: 4px solid pink;
+}
