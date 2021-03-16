@@ -1,22 +1,28 @@
 const ROWS = 20;
 const COLS = 12;
-const SPAWN_X = 100;
-const SPAWN_Y = -50;
+const SPAWN_X = 125;
+const SPAWN_Y = -25;
 const BLOCK_SIZE = 25;
 const SHAPES = [
   [[0, 0, 0], [0, 0, 1], [1, 1, 1]],
   [[0, 0, 0], [1, 0, 0], [1, 1, 1]],
   [[1, 1], [1, 1]],
   [[0, 0, 0], [0, 1, 0], [1, 1, 1]],
-  [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]],
-  [[0, 0, 0], [0, 1, 1], [1, 1, 0]]
+  [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0]],
+  [[0, 0, 0], [0, 1, 1], [1, 1, 0]],
+  [[0, 0, 0], [1, 1, 0], [0, 1, 1]]
 ];
-const COLORS = ['orange', 'hotpink', 'blue', 'red', 'mediumseagreen', 'red', 'blueviolet']
+const LEVELMULTFACTOR = [1, 1, 2, 2, 3, 3, 4, 4, 5];
+const COLORS = ['#feb377', '#ff9595', '#6886c5', '#b590ca', '#a8d3da', '#75b79e', '#b8de6f'];
 const ctx = document.getElementById('canvas').getContext('2d');
 
+var curr_delay = 700;
+var curr_level = 0;
+var curr_score = 0;
 var curr_screen = emptyScreen();
 var curr_x = SPAWN_X;
 var curr_y = SPAWN_Y;
+var curr_line_count = 0;
 var curr_color = 'orange';
 var curr_shape = SHAPES[5].map(function(arr) {
   return arr.slice();
@@ -26,17 +32,38 @@ var previous_x = SPAWN_X;
 var previous_y = SPAWN_Y;
 var previous_shape = curr_shape;
 
-var flagNoMove = false;
+var flagNoMove = true;
 
 function init() {
   ctx.canvas.width = COLS * BLOCK_SIZE;
   ctx.canvas.height = ROWS * BLOCK_SIZE;
+}
+
+init();
+
+function play() {
+  document.getElementById('play').disabled = true;
+
+  curr_delay = 700;
+  curr_level = 0;
+  curr_score = 0;
+  curr_screen = emptyScreen();
+  flagNoMove = false;
 
   newPiece();
 }
 
+function restart() {
+  flagNoMove = true;
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  document.getElementById('play').disabled = false;
+  document.getElementById('score').innerHTML = '0';
+  document.getElementById('level').innerHTML = '0';
+  document.getElementById('result').innerHTML = '&nbsp;';
+}
+
 function newPiece() {
-  curr_shape = SHAPES[Math.floor(Math.random() * 5)].map(function(arr) {
+  curr_shape = SHAPES[Math.floor(Math.random() * 7)].map(function(arr) {
     return arr.slice();
   });
   previous_shape = curr_shape;
@@ -52,7 +79,7 @@ function newPiece() {
   previous_y = -100;
 
   if (isPositionValid(curr_x/BLOCK_SIZE, curr_y/BLOCK_SIZE)) {
-    window.setTimeout(draw, 500);
+    window.setTimeout(draw, curr_delay);
   }
   else {
     document.getElementById('result').innerHTML = 'perdeu D:';
@@ -72,8 +99,10 @@ document.addEventListener('keydown', (e) => {
       rotateShape();
       break;
     case "ArrowDown":
-      if (isPositionValid(curr_x/BLOCK_SIZE, curr_y/BLOCK_SIZE))
+      if (isPositionValid(curr_x/BLOCK_SIZE, curr_y/BLOCK_SIZE)) {
         move();
+        computeScore(1);
+      }
       break;
     default:
       break;
@@ -85,11 +114,11 @@ function emptyScreen() {
 }
 
 function draw() { 
-  if (isPositionValid(curr_x/BLOCK_SIZE, curr_y/BLOCK_SIZE)) {
+  if (!flagNoMove && isPositionValid(curr_x/BLOCK_SIZE, curr_y/BLOCK_SIZE)) {
     move();
-    window.setTimeout(draw, 500);
+    window.setTimeout(draw, curr_delay);
   }
-  else {
+  else if (!flagNoMove) {
     checkLine();
     newPiece();
   }
@@ -224,6 +253,8 @@ function isPositionValid(posX, posY) {
 }
 
 function checkLine() {
+  deletedLines = 0;
+
   for (i = 0 ; i < ROWS ; i++) {
     let flag = true;
     for (j = 0 ; j < COLS && flag ; j++) {
@@ -231,8 +262,14 @@ function checkLine() {
         flag = false;
       }
     }
-    if (flag) deleteLine(i);
+    if (flag) {
+      curr_line_count++;
+      deletedLines++;
+      deleteLine(i);
+    }
   }
+
+  computeScore(deletedLines*deletedLines*100);
 }
 
 function deleteLine(line) {
@@ -277,4 +314,17 @@ function rotateShape() {
   }
 }
 
-init();
+function computeScore(points) {
+  curr_score = curr_score + points*LEVELMULTFACTOR[curr_level%8];
+
+  document.getElementById('score').innerHTML = curr_score;
+
+  if (curr_line_count >= 10) {
+    curr_level++;
+    curr_line_count = 0;
+    curr_delay -= 25;
+
+    document.getElementById('level').innerHTML = curr_level;
+  }
+}
+

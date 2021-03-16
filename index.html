@@ -8,14 +8,19 @@
     <title>tetris</title>
 </head>
 <body>
-    <canvas id="canvas" class="screen">&nbsp;</canvas>
-    <div class="info">
-        <h1>tetris</h1>
-        <h3 id="result">iai</h3>
-        <h3 id="result3">iai</h3>
-        <h3 id="result2">iai</h3>
-        <button id="play" type="button">Play</button>
-        <button id="restart" type="button">Restart</button>
+    <div id="container">
+        <div class="info">
+            <h1>tetris</h1>
+            <h3>score: <span id="score">0</span></h3>
+            <h3>level: <span id="level">0</span></h3>
+            <h3 id="result">&nbsp;</h3>
+            <button id="play" onclick="play()" type="button">start</button>
+            <br>
+            <button id="restart" onclick="restart()" type="button">restart</button>
+        </div>
+        <div>
+            <canvas id="canvas" class="screen">&nbsp;</canvas>
+        </div>
     </div>
     <script src="index.js"></script>
 </body>
