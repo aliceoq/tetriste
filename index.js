@@ -88,7 +88,7 @@ function newPiece() {
 
 document.addEventListener('keydown', (e) => {
   if (flagNoMove) return;
-  switch(e.code) {
+  switch(e.key) {
     case "ArrowLeft":
       moveLeft();
       break;
